@@ -26,3 +26,6 @@ Thumbs.db
 backend/__pycache__/
 backend/.pytest_cache/
 frontend/dist/
+
+# AWS deployment artifacts and local secrets
+backend/build/

@@ -1,0 +1,28 @@
+# Node
+node_modules/
+dist/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# Local environment files — never commit secrets
+.env
+.env.*
+!.env.example
+backend/.env
+frontend/.env
+frontend/.env.production
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artefacts
+backend/__pycache__/
+backend/.pytest_cache/
+frontend/dist/

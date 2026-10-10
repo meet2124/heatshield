@@ -5,29 +5,39 @@ html, body, #root {
   padding: 0;
   height: 100%;
   width: 100%;
-  background-color: #fdfbf7;
+  background-color: #050B18; /* Midnight navy */
 }
 
-/* Custom Leaflet Ivory Theme Overrides */
+/* Meteo Intelligence Dark Theme Overrides for Leaflet */
 .leaflet-container {
-  background-color: #f5f3ef !important;
+  background-color: #050B18 !important;
   font-family: inherit !important;
 }
 
 .custom-popup .leaflet-popup-content-wrapper,
 .custom-popup .leaflet-popup-tip {
-  background-color: #133725;
-  color: #fdfbf7;
-  border: 1px solid #1a4a32;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  background-color: #0B1426;
+  color: #F0F6FF;
+  border: 1px solid #101D32;
+  box-shadow: 0 4px 20px -1px rgba(0, 0, 0, 0.8), 0 2px 8px -1px rgba(0, 0, 0, 0.5);
 }
 
 .custom-popup .leaflet-popup-content {
-  margin: 8px 12px;
-  font-weight: 700;
+  margin: 6px 10px;
+  font-weight: 600;
   font-size: 11px;
   letter-spacing: 0.5px;
   text-transform: uppercase;
+  color: #28C7FF;
+}
+
+/* Ensure map attribution is legible on very dark maps */
+.leaflet-control-attribution {
+  background-color: rgba(5, 11, 24, 0.7) !important;
+  color: #8FA4BF !important;
+}
+.leaflet-control-attribution a {
+  color: #477BFF !important;
 }
 
 /* Fix marker sizing issue */

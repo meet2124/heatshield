@@ -143,5 +143,66 @@ class TestORSProvider(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "returned no routes"):
             self.provider.get_routes(0, 0, 1, 1)
 
+    @patch.dict(os.environ, {"ORS_API_KEY": "fake_key"})
+    @patch("routing.ors.urllib.request.urlopen")
+    def test_parsing_steps(self, mock_urlopen):
+        mock_response = MagicMock()
+        fake_data = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [[77.59, 12.97], [77.60, 12.98], [77.61, 12.99]],
+                    },
+                    "properties": {
+                        "summary": {"distance": 500.0, "duration": 360.0},
+                        "segments": [
+                            {
+                                "distance": 500.0,
+                                "duration": 360.0,
+                                "steps": [
+                                    {
+                                        "distance": 200.0,
+                                        "duration": 140.0,
+                                        "type": 10,
+                                        "instruction": "Head east on MG Road",
+                                        "name": "MG Road",
+                                        "way_points": [0, 1],
+                                    },
+                                    {
+                                        "distance": 300.0,
+                                        "duration": 220.0,
+                                        "type": 1,
+                                        "instruction": "Turn right onto Brigade Road",
+                                        "name": "Brigade Road",
+                                        "way_points": [1, 2],
+                                    },
+                                ],
+                            }
+                        ],
+                    },
+                }
+            ],
+        }
+        mock_response.read.return_value = json.dumps(fake_data).encode("utf-8")
+        mock_response.__enter__.return_value = mock_response
+        mock_urlopen.return_value = mock_response
+
+        result = self.provider.get_routes(12.97, 77.59, 12.99, 77.61, mode="walking")
+        self.assertEqual(len(result.routes), 1)
+        route = result.routes[0]
+        self.assertEqual(len(route.steps), 2)
+        self.assertEqual(route.steps[0]["instruction"], "Head east on MG Road")
+        self.assertEqual(route.steps[0]["distance"], 200.0)
+        self.assertEqual(route.steps[0]["way_points"], [0, 1])
+        self.assertEqual(route.steps[1]["instruction"], "Turn right onto Brigade Road")
+        self.assertEqual(route.steps[1]["name"], "Brigade Road")
+
+        # Verify instructions: True was sent in request payload
+        req = mock_urlopen.call_args[0][0]
+        payload = json.loads(req.data.decode("utf-8"))
+        self.assertTrue(payload.get("instructions"))
+
 if __name__ == '__main__':
     unittest.main()

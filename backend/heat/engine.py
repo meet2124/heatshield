@@ -356,4 +356,5 @@ class HeatExposureEngine:
             freshness=obs_freshness,
             data_freshness_note=freshness_note,
             validation_warnings=validation_warnings,
+            raw_unrounded_score=round(raw_final, 4),
         )

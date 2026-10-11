@@ -144,3 +144,4 @@ class ExposureResult:
     freshness: DataFreshness
     data_freshness_note: str
     validation_warnings: list[str] = field(default_factory=list)
+    raw_unrounded_score: float = 0.0

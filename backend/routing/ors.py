@@ -71,7 +71,8 @@ class ORSRoutingProvider(RoutingProvider):
             "coordinates": [[origin_lng, origin_lat], [dest_lng, dest_lat]],
             "alternative_routes": {
                 "target_count": 3
-            }
+            },
+            "instructions": True,
         }
 
         data = json.dumps(payload).encode("utf-8")
@@ -135,6 +136,24 @@ class ORSRoutingProvider(RoutingProvider):
             except (KeyError, TypeError, ValueError):
                 continue
 
+            steps: list[dict] = []
+            segments = properties.get("segments", [])
+            if isinstance(segments, list):
+                for seg in segments:
+                    if not isinstance(seg, dict):
+                        continue
+                    for st in seg.get("steps", []):
+                        if not isinstance(st, dict):
+                            continue
+                        steps.append({
+                            "distance": float(st.get("distance", 0.0)),
+                            "duration": float(st.get("duration", 0.0)),
+                            "type": int(st.get("type", 0)),
+                            "instruction": str(st.get("instruction", "")),
+                            "name": str(st.get("name", "")),
+                            "way_points": list(st.get("way_points", [])),
+                        })
+
             candidates.append(CandidateRoute(
                 id=f"route_{i}",
                 distance_meters=distance,
@@ -142,6 +161,7 @@ class ORSRoutingProvider(RoutingProvider):
                 geometry=geometry,
                 profile=profile,
                 osrm_raw_duration_seconds=duration, # Reusing field for raw duration tracking
+                steps=steps,
             ))
 
         if not candidates:

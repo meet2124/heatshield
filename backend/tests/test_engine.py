@@ -308,9 +308,51 @@ def test_t15_determinism():
         r1.risk_level == r2.risk_level)
 
 
+# ── T16: Regression test for raw unrounded score and rounding boundary ─────────
+def test_t16_raw_unrounded_score_and_rounding_policy():
+    """
+    Regression audit for the 35.37 km / 2-hour route, 120.2-min exposure:
+    Verifies that unrounded raw score is precisely calculated and rounding
+    faithfully follows the rounding policy without truncation bugs.
+    """
+    # Reported case 1: Raw final is 59.2754 -> rounds to 59
+    obs_59 = _obs(
+        temperature_c=34.2,
+        humidity_pct=45.0,
+        solar_index=6.0,
+        wind_speed_kmh=7.0,
+        cloud_cover_pct=20.0
+    )
+    route = RouteInput(
+        distance_meters=35370,
+        duration_seconds=7212,
+        mode=TravelMode.DELIVERY_RIDER
+    )
+    r_59 = engine.calculate(route, obs_59)
+    _ok("T16 raw_unrounded_score populated",
+        r_59.raw_unrounded_score is not None and r_59.raw_unrounded_score > 0,
+        f"raw={r_59.raw_unrounded_score}")
+    _ok("T16 raw score ~59.28 rounds to 59",
+        r_59.estimated_exposure_score == 59 and abs(r_59.raw_unrounded_score - 59.2754) < 0.01,
+        f"raw={r_59.raw_unrounded_score} score={r_59.estimated_exposure_score}")
+
+    # Reported case 2: If raw final is 59.777 -> must round to 60 (proves no truncation bug)
+    obs_60 = _obs(
+        temperature_c=34.2,
+        humidity_pct=50.0,
+        solar_index=5.79,
+        wind_speed_kmh=3.33,
+        cloud_cover_pct=10.0
+    )
+    r_60 = engine.calculate(route, obs_60)
+    _ok("T16 raw score ~59.78 rounds to 60 (not truncated to 59)",
+        r_60.estimated_exposure_score == 60 and r_60.raw_unrounded_score >= 59.5,
+        f"raw={r_60.raw_unrounded_score} score={r_60.estimated_exposure_score}")
+
+
 if __name__ == "__main__":
     print("\n" + "=" * 72)
-    print("HeatShield HeatExposureEngine — Unit Tests  (v2 — 15 tests)")
+    print("HeatShield HeatExposureEngine — Unit Tests  (v2 — 16 tests)")
     print("=" * 72 + "\n")
 
     test_t1_low_conditions()
@@ -328,11 +370,12 @@ if __name__ == "__main__":
     test_t13_zero_duration()
     test_t14_long_duration_bounded()
     test_t15_determinism()
+    test_t16_raw_unrounded_score_and_rounding_policy()
 
     print("\n" + "-" * 72)
     if _failures:
         print(f"FAILED: {len(_failures)} test(s) — {_failures}")
         sys.exit(1)
     else:
-        print("All 15 engine tests passed.")
+        print("All 16 engine tests passed.")
     print("-" * 72 + "\n")

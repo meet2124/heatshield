@@ -76,6 +76,10 @@ interface HourlyForecastItem {
 // ─── Config & Theme ──────────────────────────────────────────────────────────
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'
+const CARTO_API_KEY = (import.meta.env.VITE_CARTO_API_KEY as string | undefined)?.trim()
+const CARTO_TILE_URL = CARTO_API_KEY
+  ? `https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`
+  : 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png'
 
 const RISK_CONFIG = {
   LOW: {
@@ -770,7 +774,7 @@ export default function App() {
             {/* CartoDB Dark Matter High-Tech Baselayer */}
             <TileLayer
               attribution='&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+              url={CARTO_TILE_URL}
               subdomains="abcd"
               maxZoom={19}
             />
